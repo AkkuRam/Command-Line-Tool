@@ -1,1 +1,1 @@
-# Cellular-Automata
+# Command Line Tool
