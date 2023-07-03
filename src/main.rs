@@ -1,29 +1,31 @@
-use std::fmt::Display;
-
-struct User {
-    active: bool,
-    username: String,
-    email: String,
-    sign_in_count: u64,
-}
-
-impl Display for User {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Username: {}, Email: {}", self.username, self.email)
-    }
-}
-
+use std::{alloc::System, env};
+use sysinfo::{CpuExt, System as SysinfoSystem, SystemExt, ComponentExt};
 fn main() {
-    println!("{}", build_user(String::from("someusername123"), String::from("someone@example.com")));
-   
+    // command line arguments
+    // let args: Vec<String> = env::args().collect();
+    let mut sys = SysinfoSystem::new_all();
+    println!("System info ");
+    println!("total memory: {}", convert_bytes(sys.total_memory()));
+    println!("used memory: {}", convert_bytes(sys.used_memory()));
 
+    println!("NB CPUs: {}", sys.cpus().len());
 }
 
-fn build_user(email: String, username: String) -> User{
-    User {
-        active: true,
-        username,
-        email,
-        sign_in_count: 1,
+fn convert_bytes(bytes: u64) -> String {
+    const KB: u64 = 1024;
+    const MB: u64 = KB * 1024;
+    const GB: u64 = MB * 1024;
+    const TB: u64 = GB * 1024;
+
+    if bytes >= TB {
+        format!("{:.2} TB", bytes as f64 / TB as f64)
+    } else if bytes >= GB {
+        format!("{:.2} GB", bytes as f64 / GB as f64)
+    } else if bytes >= MB {
+        format!("{:.2} MB", bytes as f64 / MB as f64)
+    } else if bytes >= KB {
+        format!("{:.2} KB", bytes as f64 / KB as f64)
+    } else {
+        format!("{} bytes", bytes)
     }
 }
