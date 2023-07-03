@@ -1,14 +1,43 @@
-use std::{alloc::System, env};
-use sysinfo::{CpuExt, System as SysinfoSystem, SystemExt, ComponentExt};
-fn main() {
-    // command line arguments
-    // let args: Vec<String> = env::args().collect();
-    let mut sys = SysinfoSystem::new_all();
-    println!("System info ");
-    println!("total memory: {}", convert_bytes(sys.total_memory()));
-    println!("used memory: {}", convert_bytes(sys.used_memory()));
+use std::{alloc::System, env, io};
+use sysinfo::{ComponentExt, CpuExt, System as Sysinfo, SystemExt};
+use tui::{
+    backend::{CrosstermBackend, Backend},
+    widgets::{Widget, Block, Borders},
+    layout::{Layout, Constraint, Direction},
+    Terminal, Frame
+};
+use crossterm::{
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+fn main() -> Result<(), io::Error>  {
+    // setup terminal
+    enable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
 
-    println!("NB CPUs: {}", sys.cpus().len());
+    
+
+    // restore terminal
+    disable_raw_mode()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    )?;
+    terminal.show_cursor()?;
+
+    Ok(())
+
+    // let mut sys = Sysinfo::new_all();
+    // println!("System info ");
+    // println!("total memory: {}", convert_bytes(sys.total_memory()));
+    // println!("used memory: {}", convert_bytes(sys.used_memory()));
+    // println!("NB CPUs: {}", sys.cpus().len());
+    // cpu_usage(sys);
 }
 
 fn convert_bytes(bytes: u64) -> String {
@@ -29,3 +58,14 @@ fn convert_bytes(bytes: u64) -> String {
         format!("{} bytes", bytes)
     }
 }
+
+fn cpu_usage(mut sys: Sysinfo) {
+    loop {
+        sys.refresh_cpu();
+        for cpu in sys.cpus() {
+            print!("{}% ", cpu.cpu_usage());
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+}
+

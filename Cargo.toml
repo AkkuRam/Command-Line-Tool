@@ -6,3 +6,5 @@ edition = "2021"
 [dependencies]
 sysinfo = "0.29.2"
 platform-info = "2.0.0"
+tui = "0.19.0"
+crossterm = "0.26.1"
